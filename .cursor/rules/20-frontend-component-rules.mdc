@@ -1,0 +1,21 @@
+---
+description: Quy định cấu trúc components và reusable patterns ở Frontend
+globs: frontend/**/*
+---
+
+# 20 — FRONTEND COMPONENT RULES
+
+1. **Shared Components First**:
+   - Tất cả UI components dùng chung nằm trong `frontend/src/components/common/`.
+   - Bao gồm: `Button`, `Card`, `PageContainer`, `ListToolbar`, `DataGrid`, `Modal`, `SideDrawer`, `ConfirmDialog`, `Skeleton`, `EmptyState`, `ErrorBoundary`, `Can`, `RequireAuth`.
+   - Không tự ý tạo các biến thể nút/bảng trùng lặp trong thư mục features. Tái sử dụng common components trước.
+
+2. **Module-First Directory Layout**:
+   - Thư mục nghiệp vụ: `frontend/src/features/{module_name}/` (ví dụ `features/organization/`, `features/identity/`).
+   - Mỗi feature chứa: `components/`, `hooks/`, `services/`, `types.ts`.
+   - Pages chỉ kết nối feature components với layout và routing, không chứa logic gọi API trực tiếp.
+
+3. **Data Fetching & State**:
+   - Mọi API call qua `services/*Service.ts` kết hợp custom hooks với TanStack Query.
+   - Không dùng `fetch()` hay `axios` trực tiếp trong component lifecycle.
+   - Client-only state (sidebar, theme, active modal) dùng Zustand.

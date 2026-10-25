@@ -1,0 +1,24 @@
+---
+description: Các nguyên tắc Bắt buộc Làm (DO) và Tuyệt đối Cấm (DON'T) trong SHD OneERP
+globs: **/*
+---
+
+# 50 — DO AND DON'T FOR SHD ONEERP
+
+## DO (BẮT BUỘC):
+1. **DO** tách biệt rõ ràng giữa Write-side (EF Core) và Read-side (Stored Procedures).
+2. **DO** tuân thủ Clean Architecture: Domain không phụ thuộc tầng ngoài, Application chỉ phụ thuộc Domain.
+3. **DO** kiểm tra quyền (Authorization) và phạm vi dữ liệu (Scope LegalEntity/BusinessUnit) tại Backend, không chỉ tin cậy Frontend.
+4. **DO** sử dụng `rowversion` (concurrency token) cho các entity mutable trọng yếu để chống ghi đè dữ liệu đồng thời (Optimistic Concurrency).
+5. **DO** xử lý `traceId` và trả về định dạng lỗi chuẩn `{ code, message, errors, traceId }`.
+6. **DO** giữ trạng thái lọc/tìm kiếm khi điều hướng UI.
+7. **DO** đánh dấu `TBD` các thông tin nghiệp vụ/pháp nhân chưa có quyết định chính thức từ Product Owner.
+
+## DON'T (TUYỆT ĐỐI CẤM):
+1. **DON'T** viết business logic bên trong API Controller. Controller chỉ nhận HTTP request, gọi Application Handler/Service và trả về ActionResult.
+2. **DON'T** dùng EF Core LINQ query để load dữ liệu cho API GET nghiệp vụ.
+3. **DON'T** dùng `dotnet ef migrations` hoặc `Database.Migrate()`.
+4. **DON'T** hardcode ID nhóm người dùng (ví dụ: `GroupId == 1`), chuỗi kết nối, secret key, hoặc password trong mã nguồn.
+5. **DON'T** cho phép đọc chéo dữ liệu giữa các pháp nhân nếu người dùng không được cấp quyền phạm vi tương ứng.
+6. **DON'T** tạo mock UI giả lập dữ liệu tĩnh rồi đánh dấu hoàn thành (fake DONE). Mọi UI hiển thị dữ liệu phải kết nối qua service/hook tương thích với API backend.
+7. **DON'T** tự động gửi email thật, webhook thật hoặc kết nối hệ thống bên ngoài trong giai đoạn bootstrap.

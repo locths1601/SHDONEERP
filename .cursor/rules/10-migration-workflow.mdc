@@ -1,0 +1,20 @@
+---
+description: Quy chuẩn quản lý Database Migrations viết tay và Migration Runner
+globs: database/**/*, backend/**/*.sql
+---
+
+# 10 — MIGRATION WORKFLOW
+
+1. **Không dùng EF Core Migrations**:
+   - Nghiêm cấm chạy `dotnet ef migrations add`, `dotnet ef database update`, hoặc gọi `Database.Migrate()` trong runtime.
+   - Tất cả thay đổi schema, bảng, index, constraints, stored procedures, function và seeds hệ thống đều phải viết bằng SQL script thuần (Hand-written SQL).
+
+2. **Quy ước đặt tên**:
+   - Thư mục lưu trữ: `database/migrations/`.
+   - Cú pháp: `YYYYMMDD_HHMM_PascalCaseDescription.sql`.
+   - Ví dụ: `20261025_0001_InitialIdentitySchema.sql`, `20261025_0002_OrganizationModuleSchema.sql`.
+
+3. **Tính chất Idempotent & An toàn**:
+   - Mỗi file script phải có khả năng chạy lại an toàn nếu hỗ trợ (`IF NOT EXISTS...`).
+   - Mọi migration đã áp dụng vào database môi trường dùng chung là bất biến (immutable). Không sửa file cũ; tạo file migration mới để thay đổi.
+   - Bảng quản lý lịch sử migration: `__DbMigrationHistory` (MigrationId, MigrationName, AppliedAtUtc, Checksum, Success).

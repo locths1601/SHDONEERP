@@ -1,0 +1,17 @@
+---
+description: Quy trình kiểm tra, sửa lỗi và đảm bảo chất lượng code
+globs: **/*
+---
+
+# 30 — BUG FIX PROTOCOL & QUALITY GATES
+
+1. **Nguyên tắc điều tra lỗi**:
+   - Xác định nguyên nhân gốc rễ (Root Cause Analysis - RCA) trước khi sửa code.
+   - Không áp dụng "quick fix" che giấu lỗi mà vi phạm Clean Architecture hoặc bảo mật.
+   - Viết hoặc cập nhật unit/integration test tái hiện lỗi trước khi hoàn tất sửa chữa.
+
+2. **Quality Gates trước khi bàn giao**:
+   - Backend: `dotnet build` 0 errors, 0 warnings nghiêm trọng. `dotnet test` toàn bộ pass.
+   - Frontend: TypeScript `tsc --noEmit` pass không có lỗi `any` tuỳ tiện; linting sạch sẽ.
+   - Database: Migration scripts chạy thành công tuần tự từ ban đầu mà không báo lỗi syntax.
+   - Không commit mật khẩu, connection string thực tế hoặc access tokens vào repository.

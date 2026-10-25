@@ -1,0 +1,24 @@
+---
+description: Tiêu chuẩn trải nghiệm người dùng enterprise và quản lý trạng thái UI
+globs: frontend/**/*
+---
+
+# 25 — UI/UX ENTERPRISE STANDARDS
+
+1. **Đầy đủ 6 trạng thái UI**:
+   - Mọi view dữ liệu phải hỗ trợ đầy đủ 6 trạng thái:
+     1. `Loading`: Skeleton loader hoặc spinner tương ứng kích thước khu vực, không nhảy layout (layout shift).
+     2. `Empty`: Trạng thái trống có icon, thông điệp rõ ràng và nút kêu gọi hành động (Call To Action).
+     3. `Error`: Hiển thị lỗi thân thiện, kèm mã traceId hoặc nút Thử lại (Retry).
+     4. `Success / Data`: Hiển thị dữ liệu chuẩn format (tiền tệ VND/USD, ngày giờ định dạng Việt Nam `dd/MM/yyyy HH:mm`).
+     5. `Forbidden (403)`: Báo không có quyền truy cập thay vì màn hình trắng.
+     6. `Conflict (409)`: Xử lý đụng độ phiên bản (concurrency), thông báo dữ liệu đã bị sửa bởi người khác.
+
+2. **Tương tác an toàn**:
+   - Cấm dùng `window.alert()` hoặc `window.confirm()`.
+   - Các hành động xóa/hủy hoặc thao tác nguy hiểm phải dùng `ConfirmDialog` với nút cảnh báo đỏ và mô tả hậu quả rõ ràng.
+   - Giữ trạng thái filter, tìm kiếm và phân trang khi điều hướng qua lại giữa danh sách và chi tiết.
+
+3. **Giao diện doanh nghiệp**:
+   - Ngôn ngữ mặc định: Tiếng Việt.
+   - Hỗ trợ Light / Dark mode. Responsive trên màn hình Desktop và Laptop chuẩn (từ 1280px trở lên tối ưu cho ERP).

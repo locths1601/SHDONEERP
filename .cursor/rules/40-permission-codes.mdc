@@ -1,0 +1,31 @@
+---
+description: Quy chuẩn định nghĩa và quản lý mã quyền (Permission Codes) và Direct GBAC
+globs: **/*
+---
+
+# 40 — PERMISSION CODES & DIRECT GBAC v4.2
+
+1. **Cấu trúc mã quyền (Canonical Format)**:
+   - Cú pháp: `{module}.{resource}.{action}`.
+   - Các action chuẩn:
+     - `.view`: Xem danh sách, chi tiết, tra cứu.
+     - `.create`: Thêm mới bản ghi.
+     - `.edit`: Sửa thông tin, cập nhật trạng thái.
+     - `.delete`: Xóa (soft delete hoặc hard delete theo chính sách).
+     - `.approve`: Phê duyệt nghiệp vụ (hợp đồng, hoàn tiền, học phí).
+     - `.manage`: Quyền cấu hình hoặc toàn quyền quản trị tài nguyên.
+
+2. **Danh mục quyền nền tảng (Foundation Seed)**:
+   - `identity.user.view`, `identity.user.create`, `identity.user.edit`, `identity.user.delete`
+   - `identity.group.view`, `identity.group.create`, `identity.group.edit`, `identity.group.delete`, `identity.group.assign`
+   - `identity.permission.view`, `identity.permission.assign`
+   - `org.legal_entity.view`, `org.legal_entity.create`, `org.legal_entity.edit`, `org.legal_entity.delete`
+   - `org.business_unit.view`, `org.business_unit.create`, `org.business_unit.edit`, `org.business_unit.delete`
+   - `org.branch.view`, `org.branch.create`, `org.branch.edit`, `org.branch.delete`
+   - `party.profile.view`, `party.profile.create`, `party.profile.edit`
+
+3. **Mô hình Direct GBAC**:
+   - `User` -> `UserGroupMember` -> `UserGroup` -> `UserGroupPermission` -> `Permission`.
+   - UserGroup có Scope: `Global`, `LegalEntity`, `BusinessUnit`, `Branch`.
+   - Phân biệt nhóm hệ thống `Administrators` bằng Code (`ADMINISTRATORS`), không dùng ID số cứng.
+   - Deny-by-default: Mọi API endpoint nghiệp vụ bắt buộc khai báo policy phân quyền rõ ràng trên Controller/Action.

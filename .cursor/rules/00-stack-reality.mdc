@@ -1,0 +1,27 @@
+---
+description: Quy định về công nghệ, kiến trúc và giới hạn hệ thống SHD OneERP
+globs: **/*
+---
+
+# 00 — STACK REALITY & ARCHITECTURAL BOUNDARIES
+
+1. **Backend**:
+   - .NET 10 / ASP.NET Core Web API.
+   - Clean Architecture + Modular Monolith.
+   - Namespace bắt buộc: `ShdOneErp.*`.
+   - Layers:
+     - `ShdOneErp.Domain`: Pure domain logic, entities, value objects, exceptions, zero external dependencies.
+     - `ShdOneErp.Application`: Interfaces, DTOs, Use Cases, Validators, Domain Event Handlers.
+     - `ShdOneErp.Infrastructure`: EF Core DbContext (Write-side), `ISpExecutor` (Read-side), Auth, External Services.
+     - `ShdOneErp.Api`: Web API Controllers, Filters, Middlewares, DI Setup.
+     - `ShdOneErp.Tests`: Unit, Security & Integration tests.
+
+2. **Persistence Split**:
+   - **Command / Write Side**: Entity Framework Core. Entity configuration tách biệt theo module trong `Infrastructure/Persistence/Configurations`.
+   - **Query / Read Side**: Bắt buộc sử dụng SQL Server Stored Procedures cho mọi API GET nghiệp vụ (`sp_*`). Parameterized SQL query thông qua `ISpExecutor`. Tuyệt đối không dùng EF Core LINQ query trên business GET endpoints.
+
+3. **Frontend**:
+   - React 18, TypeScript strict mode, Vite.
+   - Tailwind CSS, Lucide React, Radix UI / shadcn style primitives.
+   - TanStack Query cho server state, Zustand cho client state.
+   - react-hook-form + zod cho form validation.

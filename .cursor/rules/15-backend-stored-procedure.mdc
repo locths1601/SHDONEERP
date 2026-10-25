@@ -1,0 +1,17 @@
+---
+description: Quy định viết và thực thi Stored Procedure cho Read-side
+globs: backend/**/*.cs, database/**/*.sql
+---
+
+# 15 — BACKEND STORED PROCEDURE RULES
+
+1. **Quy ước bắt buộc cho API GET**:
+   - Tất cả endpoint GET lấy dữ liệu nghiệp vụ (danh sách phân trang, chi tiết, tìm kiếm, dashboard) đều phải gọi Stored Procedure.
+   - Không thực thi LINQ to Entities cho các query này.
+   - Ngoại lệ duy nhất: các query validation trên command handler (ví dụ: `AnyAsync` kiểm tra unique code khi tạo mới), health checks, hoặc auth internals.
+
+2. **Quy tắc Stored Procedure**:
+   - Tên SP: `sp_{ModuleName}_{ResourceName}_{Action}` (ví dụ: `sp_Organization_LegalEntity_GetPaged`, `sp_Organization_LegalEntity_GetById`).
+   - Tham số: Phải có kiểu rõ ràng, có xử lý phân trang `@PageNumber`, `@PageSize`, tìm kiếm `@SearchTerm`, sắp xếp `@SortBy`, `@SortOrder`, và phạm vi dữ liệu `@CurrentUserId`, `@ScopeLegalEntityId`.
+   - Kết quả phân trang: Luôn trả kèm `TotalCount` (qua `OUTPUT` parameter hoặc second result set) để client tính `totalPages`.
+   - Bảo mật SQL: Tuyệt đối không ghép chuỗi SQL động (Dynamic SQL không an toàn). Mọi dynamic sorting/filtering phải dùng whitelist hoặc parameterized logic.
