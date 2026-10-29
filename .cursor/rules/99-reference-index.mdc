@@ -1,0 +1,37 @@
+---
+description: Chỉ mục tham chiếu toàn bộ bộ quy tắc và tiêu chuẩn kỹ thuật SHD OneERP
+globs: **/*
+---
+
+# 99 — REFERENCE INDEX & SYSTEM STANDARDS
+
+Tài liệu này tổng hợp cấu trúc tra cứu các quy chuẩn kỹ thuật, kiến trúc và phát triển tính năng cho hệ thống **SHD OneERP**.
+
+## 1. Bản đồ quy tắc phát triển (.cursor/rules)
+
+| Tệp quy tắc | Nội dung cốt lõi | Phạm vi áp dụng |
+|---|---|---|
+| [`00-stack-reality.mdc`](file:///.cursor/rules/00-stack-reality.mdc) | Công nghệ bắt buộc (.NET 10, React 18, SQL Server), ranh giới lớp Clean Architecture, persisted split (EF Core Command vs SP Query). | Toàn hệ thống |
+| [`10-migration-workflow.mdc`](file:///.cursor/rules/10-migration-workflow.mdc) | Quy chuẩn migration SQL viết tay, định danh timestamp version, cấm EF migrations, tính bất biến và idempotent. | `database/migrations/*` |
+| [`15-backend-stored-procedure.mdc`](file:///.cursor/rules/15-backend-stored-procedure.mdc) | Mẫu viết Stored Procedure cho business GET, phân trang server-side, whitelist sorting, parameterized queries, phân quyền scope. | `database/migrations/*`, `Infrastructure/Persistence/StoredProcedures/*` |
+| [`20-frontend-component-rules.mdc`](file:///.cursor/rules/20-frontend-component-rules.mdc) | Bộ UI primitives (PageContainer, Card, DataGrid, Modal, Drawer), React 18 strict mode, cấm fetch/axios tùy tiện, quản lý trạng thái qua Zustand & TanStack Query. | `frontend/src/*` |
+| [`25-ui-ux-experience.mdc`](file:///.cursor/rules/25-ui-ux-experience.mdc) | Tiêu chuẩn trải nghiệm người dùng ERP (Loading, Empty, Error, 403, 409 Conflict), giao diện tiếng Việt, thông báo Sonner Toast. | `frontend/src/*` |
+| [`30-bug-fix-protocol.mdc`](file:///.cursor/rules/30-bug-fix-protocol.mdc) | Quy trình cô lập lỗi, kiểm thử hồi quy (Regression Test First), bảo toàn dữ liệu và tuân thủ audit log. | Toàn hệ thống |
+| [`40-permission-codes.mdc`](file:///.cursor/rules/40-permission-codes.mdc) | Danh mục mã quyền Direct GBAC (`module.resource.action`), quy tắc đặt mã và phạm vi cấp quyền (Global, LegalEntity, BusinessUnit, Branch). | Backend, DB Seeds, Frontend Guards |
+| [`50-do-and-dont.mdc`](file:///.cursor/rules/50-do-and-dont.mdc) | Bảng điều cấm kỵ và thực hành bắt buộc trong dự án (Không hardcode admin secret, không LINQ cho business GET, không mock fallback giả tạo). | Toàn hệ thống |
+
+## 2. Tài liệu kiến trúc & nghiệp vụ (docs/)
+
+1. [`00_PROJECT_VISION.md`](file:///docs/00_PROJECT_VISION.md): Tầm nhìn sản phẩm, bối cảnh đa công ty hệ sinh thái SHD Corp.
+2. [`01_BUSINESS_CONTEXT.md`](file:///docs/01_BUSINESS_CONTEXT.md): Khái niệm phân biệt bắt buộc (`LegalEntity` ≠ `BusinessUnit` ≠ `Branch`; `Party` ≠ `ApplicationUser`).
+3. [`02_ARCHITECTURE.md`](file:///docs/02_ARCHITECTURE.md): Kiến trúc Clean Architecture + Modular Monolith và Persistent CQRS Split.
+4. [`03_DOMAIN_MAP.md`](file:///docs/03_DOMAIN_MAP.md): Bản đồ phân hệ Domain (Foundation, Identity, Organization, Party360).
+5. [`04_DATA_MODEL.md`](file:///docs/04_DATA_MODEL.md): Mô hình dữ liệu cơ sở và quan hệ thực thể.
+6. [`05_AUTHORIZATION.md`](file:///docs/05_AUTHORIZATION.md): Cơ chế phân quyền Direct GBAC v4.2 và kiểm soát đa chiều Scope.
+7. [`06_API_CONVENTIONS.md`](file:///docs/06_API_CONVENTIONS.md): Chuẩn thiết kế RESTful API, mã lỗi chuẩn hóa `{code, message, traceId}`.
+8. [`07_UI_UX_STANDARDS.md`](file:///docs/07_UI_UX_STANDARDS.md): Tiêu chuẩn thiết kế giao diện doanh nghiệp thống nhất.
+9. [`08_ROADMAP_BACKLOG.md`](file:///docs/08_ROADMAP_BACKLOG.md): Lộ trình triển khai, trạng thái các Phase và Top Backlog Items.
+10. [`09_SETUP_AND_RUN.md`](file:///docs/09_SETUP_AND_RUN.md): Hướng dẫn thiết lập môi trường dev và kiểm thử.
+11. [`10_ADR.md`](file:///docs/10_ADR.md): Bản ghi quyết định kiến trúc kỹ thuật (Architecture Decision Records).
+12. [`11_DISCOVERY_DECISIONS.md`](file:///docs/11_DISCOVERY_DECISIONS.md): Bảng đăng ký câu hỏi mở và quyết định nghiệp vụ cần PO phê chuẩn (NEEDS_PO).
+

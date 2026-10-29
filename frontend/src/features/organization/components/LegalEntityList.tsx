@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Eye, Edit2, Trash2, Building } from 'lucide-react';
+import { Plus, Eye, Edit2, Trash2 } from 'lucide-react';
 import { ListToolbar } from '../../../components/common/ListToolbar';
 import { DataGrid, Column } from '../../../components/common/DataGrid';
 import { Button } from '../../../components/common/Button';

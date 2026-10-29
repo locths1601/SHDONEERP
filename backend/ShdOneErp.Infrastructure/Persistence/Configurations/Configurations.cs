@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ShdOneErp.Domain.Entities.Identity;
 using ShdOneErp.Domain.Entities.Organization;
@@ -140,6 +140,9 @@ public class BusinessUnitConfiguration : IEntityTypeConfiguration<BusinessUnit>
         builder.HasOne(x => x.LegalEntity)
             .WithMany(x => x.BusinessUnits)
             .HasForeignKey(x => x.LegalEntityId);
+        builder.HasIndex(x => new { x.LegalEntityId, x.Code })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
     }
 }
 
@@ -163,6 +166,10 @@ public class BranchConfiguration : IEntityTypeConfiguration<Branch>
         builder.HasOne(x => x.BusinessUnit)
             .WithMany(x => x.Branches)
             .HasForeignKey(x => x.BusinessUnitId);
+
+        builder.HasIndex(x => new { x.LegalEntityId, x.Code })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
     }
 }
 
@@ -257,5 +264,25 @@ public class PartyIdentificationConfiguration : IEntityTypeConfiguration<PartyId
         builder.HasOne(x => x.Party)
             .WithMany(x => x.Identifications)
             .HasForeignKey(x => x.PartyId);
+    }
+}
+
+public class PartyRelationshipConfiguration : IEntityTypeConfiguration<PartyRelationship>
+{
+    public void Configure(EntityTypeBuilder<PartyRelationship> builder)
+    {
+        builder.ToTable("Party_PartyRelationships");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.RelationshipType).HasMaxLength(50).IsRequired();
+
+        builder.HasOne(x => x.FromParty)
+            .WithMany(x => x.Relationships)
+            .HasForeignKey(x => x.FromPartyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.ToParty)
+            .WithMany()
+            .HasForeignKey(x => x.ToPartyId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

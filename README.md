@@ -21,7 +21,7 @@
 
 ```text
 SHD-OneERP/
-├── .cursor/rules/             # 8 quy chuẩn kỹ thuật độc lập cho SHD
+├── .cursor/rules/             # 9 quy chuẩn kỹ thuật độc lập cho SHD
 ├── backend/                   # Clean Architecture .NET Solution
 │   ├── ShdOneErp.sln
 │   ├── ShdOneErp.Domain/      # Entities, Enums, Value Objects, Domain Exceptions

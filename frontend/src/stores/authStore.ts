@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { authService } from '../features/identity/services/authService';
 
 export interface AuthUser {
   id: string;
@@ -39,6 +40,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
+    const refreshToken = localStorage.getItem('shd_refresh_token');
+    if (refreshToken) {
+      authService.logout(refreshToken).catch(() => {});
+    }
     localStorage.removeItem('shd_access_token');
     localStorage.removeItem('shd_refresh_token');
     localStorage.removeItem('shd_user');

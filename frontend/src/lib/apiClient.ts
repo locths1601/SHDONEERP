@@ -19,7 +19,11 @@ class ApiClient {
 
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
-    const headers = { ...this.getHeaders(), ...options.headers };
+    const defaultHeaders = this.getHeaders() as Record<string, string>;
+    if (options.body instanceof FormData) {
+      delete defaultHeaders['Content-Type'];
+    }
+    const headers = { ...defaultHeaders, ...options.headers };
 
     try {
       const response = await fetch(url, { ...options, headers });
@@ -75,6 +79,13 @@ class ApiClient {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  upload<T>(endpoint: string, formData: FormData): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: formData,
     });
   }
 

@@ -17,6 +17,20 @@ public class RefreshTokenRequest
     public string RefreshToken { get; set; } = string.Empty;
 }
 
+public class RevokeTokenRequest
+{
+    public string RefreshToken { get; set; } = string.Empty;
+}
+
+public class BootstrapAdminRequest
+{
+    public string AdminUsername { get; set; } = string.Empty;
+    public string AdminEmail { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string? BootstrapSecret { get; set; }
+}
+
 public class LoginResponse
 {
     public string AccessToken { get; set; } = string.Empty;

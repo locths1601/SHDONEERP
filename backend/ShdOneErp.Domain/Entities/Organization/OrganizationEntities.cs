@@ -112,6 +112,15 @@ public class BusinessUnit : BaseEntity
 
     public BusinessUnit(Guid legalEntityId, string code, string name, EntityStatus status = EntityStatus.Active)
     {
+        if (legalEntityId == Guid.Empty)
+            throw new BusinessRuleViolationException("INVALID_LEGAL_ENTITY_ID", "Pháp nhân là bắt buộc.");
+        if (string.IsNullOrWhiteSpace(code))
+            throw new BusinessRuleViolationException("INVALID_BUSINESS_UNIT_CODE", "Mã đơn vị kinh doanh không được để trống.");
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessRuleViolationException("INVALID_BUSINESS_UNIT_NAME", "Tên đơn vị kinh doanh không được để trống.");
+        if (!Enum.IsDefined(status))
+            throw new BusinessRuleViolationException("INVALID_BUSINESS_UNIT_STATUS", "Trạng thái đơn vị kinh doanh không hợp lệ.");
+
         LegalEntityId = legalEntityId;
         Code = code.Trim().ToUpperInvariant();
         Name = name.Trim();
@@ -120,8 +129,21 @@ public class BusinessUnit : BaseEntity
 
     public void Update(string name, EntityStatus status)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessRuleViolationException("INVALID_BUSINESS_UNIT_NAME", "Tên đơn vị kinh doanh không được để trống.");
+        if (!Enum.IsDefined(status))
+            throw new BusinessRuleViolationException("INVALID_BUSINESS_UNIT_STATUS", "Trạng thái đơn vị kinh doanh không hợp lệ.");
+
         Name = name.Trim();
         Status = status;
+        MarkUpdated();
+    }
+
+    public void SoftDelete()
+    {
+        if (IsDeleted) return;
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
         MarkUpdated();
     }
 }
@@ -145,6 +167,15 @@ public class Branch : BaseEntity
 
     public Branch(Guid legalEntityId, string code, string name, Guid? businessUnitId = null, string? address = null, EntityStatus status = EntityStatus.Active)
     {
+        if (legalEntityId == Guid.Empty)
+            throw new BusinessRuleViolationException("INVALID_LEGAL_ENTITY_ID", "Pháp nhân là bắt buộc.");
+        if (string.IsNullOrWhiteSpace(code))
+            throw new BusinessRuleViolationException("INVALID_BRANCH_CODE", "Mã chi nhánh/cơ sở không được để trống.");
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessRuleViolationException("INVALID_BRANCH_NAME", "Tên chi nhánh/cơ sở không được để trống.");
+        if (!Enum.IsDefined(status))
+            throw new BusinessRuleViolationException("INVALID_BRANCH_STATUS", "Trạng thái chi nhánh không hợp lệ.");
+
         LegalEntityId = legalEntityId;
         Code = code.Trim().ToUpperInvariant();
         Name = name.Trim();
@@ -153,11 +184,25 @@ public class Branch : BaseEntity
         Status = status;
     }
 
-    public void Update(string name, string? address, EntityStatus status)
+    public void Update(string name, Guid? businessUnitId, string? address, EntityStatus status)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessRuleViolationException("INVALID_BRANCH_NAME", "Tên chi nhánh/cơ sở không được để trống.");
+        if (!Enum.IsDefined(status))
+            throw new BusinessRuleViolationException("INVALID_BRANCH_STATUS", "Trạng thái chi nhánh không hợp lệ.");
+
         Name = name.Trim();
+        BusinessUnitId = businessUnitId;
         Address = address?.Trim();
         Status = status;
+        MarkUpdated();
+    }
+
+    public void SoftDelete()
+    {
+        if (IsDeleted) return;
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
         MarkUpdated();
     }
 }

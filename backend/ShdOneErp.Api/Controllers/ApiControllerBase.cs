@@ -68,6 +68,8 @@ public abstract class ApiControllerBase : ControllerBase
             "FORBIDDEN" or "UNAUTHORIZED_SCOPE" => StatusCodes.Status403Forbidden,
             "CONCURRENCY_CONFLICT" => StatusCodes.Status409Conflict,
             "DUPLICATE_CODE" => StatusCodes.Status409Conflict,
+            "HAS_DEPENDENT_RECORDS" => StatusCodes.Status409Conflict,
+            "LEGAL_ENTITY_NOT_FOUND" => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status400BadRequest
         };
 
@@ -86,6 +88,8 @@ public abstract class ApiControllerBase : ControllerBase
             "FORBIDDEN" or "UNAUTHORIZED_SCOPE" => StatusCodes.Status403Forbidden,
             "CONCURRENCY_CONFLICT" => StatusCodes.Status409Conflict,
             "DUPLICATE_CODE" => StatusCodes.Status409Conflict,
+            "HAS_DEPENDENT_RECORDS" => StatusCodes.Status409Conflict,
+            "LEGAL_ENTITY_NOT_FOUND" => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status400BadRequest
         };
 
