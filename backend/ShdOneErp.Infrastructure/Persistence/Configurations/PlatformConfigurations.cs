@@ -123,6 +123,14 @@ public class MasterDataCatalogConfiguration : IEntityTypeConfiguration<MasterDat
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).HasMaxLength(50).IsRequired();
         builder.Property(x => x.Name).HasMaxLength(150).IsRequired();
+        builder.Property(x => x.Description).HasMaxLength(500);
+        builder.Property(x => x.OwnerModule).HasMaxLength(50).IsRequired().HasDefaultValue("SYSTEM");
+        builder.Property(x => x.ScopePolicy).HasMaxLength(30).IsRequired().HasDefaultValue("GLOBAL");
+        builder.Property(x => x.IsSystem).IsRequired();
+        builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
+        builder.Property(x => x.RowVersion).IsRowVersion();
+        builder.Property(x => x.CreatedAtUtc).IsRequired();
+        builder.Property(x => x.UpdatedAtUtc);
         builder.HasIndex(x => x.Code).IsUnique();
     }
 }
@@ -136,6 +144,10 @@ public class MasterDataItemConfiguration : IEntityTypeConfiguration<MasterDataIt
         builder.Property(x => x.Code).HasMaxLength(50).IsRequired();
         builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
         builder.Property(x => x.Value).HasMaxLength(500);
+        builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
+        builder.Property(x => x.RowVersion).IsRowVersion();
+        builder.Property(x => x.CreatedAtUtc).IsRequired();
+        builder.Property(x => x.UpdatedAtUtc);
 
         builder.HasOne(x => x.Catalog)
             .WithMany(x => x.Items)

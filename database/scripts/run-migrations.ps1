@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     SHD OneERP Hand-written SQL Migration Runner
 .DESCRIPTION
@@ -98,7 +98,8 @@ try {
         if ($appliedMigrations.ContainsKey($migrationId)) {
             $savedChecksum = $appliedMigrations[$migrationId]
             if ($savedChecksum -ne $currentChecksum) {
-                Write-Warning "CẢNH BÁO: Migration [$migrationId] đã được áp dụng nhưng nội dung tệp đã bị thay đổi! (Checksum mismatch)"
+                Write-Error "[LỖI CHECKSUM CHẶN ĐỨNG] Migration [$migrationId] đã được áp dụng với mã băm [$savedChecksum], nhưng nội dung tệp hiện tại có mã băm [$currentChecksum]! Vi phạm tính bất biến của migration."
+                exit 1
             }
             $skippedCount++
             continue

@@ -1,4 +1,4 @@
--- =========================================================================
+﻿-- =========================================================================
 -- Migration: 20261027_0012_ModuleAndFeatureRegistryPlatform.sql
 -- Description: FND-04 Module & Feature Registry Platform Schemas & Stored Procedures
 --   1. Schema Enhancements: System_Modules, System_Features
@@ -228,14 +228,14 @@ DECLARE @Modules TABLE (
 );
 
 INSERT INTO @Modules ([Id], [Code], [Name], [Description], [Version], [OrderIndex], [Icon], [Status], [ParentCode]) VALUES
-('M1000000-0000-0000-0000-000000000001', 'IDENTITY', N'Định danh & Phân quyền GBAC', N'Quản lý Người dùng, Nhóm quyền GBAC v4.2 và Cơ chế kiểm soát truy cập dữ liệu đa cấp', '1.0.0', 10, 'ShieldCheck', 'Active', NULL),
-('M1000000-0000-0000-0000-000000000002', 'ORGANIZATION', N'Cấu trúc Tổ chức Đa Pháp nhân', N'Quản lý Tập đoàn, Pháp nhân thành viên (Legal Entity), Đơn vị kinh doanh (BU) và Cơ sở Campus', '1.0.0', 20, 'Building2', 'Active', NULL),
-('M1000000-0000-0000-0000-000000000003', 'PARTY360', N'Quản trị Chủ thể Party 360', N'Hồ sơ định danh tập trung cho Học viên, Phụ huynh, Đối tác, Nhà cung cấp và Cán bộ nhân viên', '1.0.0', 30, 'Users', 'Active', NULL),
-('M1000000-0000-0000-0000-000000000004', 'SYSTEM', N'Nền tảng Quản trị Hệ thống', N'Quản lý Danh mục Module, Feature, Dữ liệu dùng chung, Kiểm toán và Kiến trúc nền tảng', '1.0.0', 40, 'Layers', 'Active', NULL),
-('M1000000-0000-0000-0000-000000000005', 'AUDIT', N'Nhật ký Kiểm toán Hệ thống', N'Truy vết toàn diện CUD, so sánh Before/After và che giấu dữ liệu nhạy cảm tự động', '1.0.0', 41, 'History', 'Active', 'SYSTEM'),
-('M1000000-0000-0000-0000-000000000006', 'DOCUMENTS', N'Quản lý Hồ sơ & Phân loại Dữ liệu', N'Quản lý tài liệu đính kèm, phân loại dữ liệu (Public, Internal, Confidential, Restricted)', '1.0.0', 42, 'FileText', 'Active', 'SYSTEM'),
-('M1000000-0000-0000-0000-000000000007', 'MASTERDATA', N'Danh mục Dữ liệu Dùng chung', N'Catalog và các mục dữ liệu tổng quát cho toàn bộ các phân hệ thành viên', '1.0.0', 43, 'Database', 'Active', 'SYSTEM'),
-('M1000000-0000-0000-0000-000000000008', 'WORKFLOW', N'Quy trình Phê duyệt Doanh nghiệp', N'Động cơ luồng công việc đa cấp, State Machine và Transactional Outbox Events', '1.0.0', 44, 'GitBranch', 'Active', 'SYSTEM');
+('A1000000-0000-0000-0000-000000000001', 'IDENTITY', N'Định danh & Phân quyền GBAC', N'Quản lý Người dùng, Nhóm quyền GBAC v4.2 và Cơ chế kiểm soát truy cập dữ liệu đa cấp', '1.0.0', 10, 'ShieldCheck', 'Active', NULL),
+('A1000000-0000-0000-0000-000000000002', 'ORGANIZATION', N'Cấu trúc Tổ chức Đa Pháp nhân', N'Quản lý Tập đoàn, Pháp nhân thành viên (Legal Entity), Đơn vị kinh doanh (BU) và Cơ sở Campus', '1.0.0', 20, 'Building2', 'Active', NULL),
+('A1000000-0000-0000-0000-000000000003', 'PARTY360', N'Quản trị Chủ thể Party 360', N'Hồ sơ định danh tập trung cho Học viên, Phụ huynh, Đối tác, Nhà cung cấp và Cán bộ nhân viên', '1.0.0', 30, 'Users', 'Active', NULL),
+('A1000000-0000-0000-0000-000000000004', 'SYSTEM', N'Nền tảng Quản trị Hệ thống', N'Quản lý Danh mục Module, Feature, Dữ liệu dùng chung, Kiểm toán và Kiến trúc nền tảng', '1.0.0', 40, 'Layers', 'Active', NULL),
+('A1000000-0000-0000-0000-000000000005', 'AUDIT', N'Nhật ký Kiểm toán Hệ thống', N'Truy vết toàn diện CUD, so sánh Before/After và che giấu dữ liệu nhạy cảm tự động', '1.0.0', 41, 'History', 'Active', 'SYSTEM'),
+('A1000000-0000-0000-0000-000000000006', 'DOCUMENTS', N'Quản lý Hồ sơ & Phân loại Dữ liệu', N'Quản lý tài liệu đính kèm, phân loại dữ liệu (Public, Internal, Confidential, Restricted)', '1.0.0', 42, 'FileText', 'Active', 'SYSTEM'),
+('A1000000-0000-0000-0000-000000000007', 'MASTERDATA', N'Danh mục Dữ liệu Dùng chung', N'Catalog và các mục dữ liệu tổng quát cho toàn bộ các phân hệ thành viên', '1.0.0', 43, 'Database', 'Active', 'SYSTEM'),
+('A1000000-0000-0000-0000-000000000008', 'WORKFLOW', N'Quy trình Phê duyệt Doanh nghiệp', N'Động cơ luồng công việc đa cấp, State Machine và Transactional Outbox Events', '1.0.0', 44, 'GitBranch', 'Active', 'SYSTEM');
 
 -- Merge Modules cấp 1 (Không có parent)
 MERGE [dbo].[System_Modules] AS target

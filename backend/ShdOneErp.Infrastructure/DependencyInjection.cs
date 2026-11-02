@@ -9,7 +9,10 @@ using ShdOneErp.Application.Modules.Organization.Interfaces;
 using ShdOneErp.Application.Modules.Organization.Services;
 using ShdOneErp.Application.Modules.Party360.Interfaces;
 using ShdOneErp.Application.Modules.Party360.Services;
+using ShdOneErp.Application.Modules.SystemReferenceData.Interfaces;
+using ShdOneErp.Application.Modules.SystemReferenceData.Services;
 using ShdOneErp.Infrastructure.Authentication;
+using ShdOneErp.Infrastructure.Extensions;
 using ShdOneErp.Infrastructure.Persistence;
 using ShdOneErp.Infrastructure.Persistence.Interceptors;
 using ShdOneErp.Infrastructure.Persistence.StoredProcedures;
@@ -81,6 +84,20 @@ public static class DependencyInjection
 
         // 9. Audit Log Platform Service
         services.AddScoped<IAuditLogReadService, AuditLogReadService>();
+
+        // 10. Module & Feature Registry Platform
+        services.AddModuleRegistryModule();
+
+        // 11. Workflow Engine & Transactional Outbox Foundation
+        services.AddWorkflowEngineServices();
+        services.AddTransactionalOutboxPlatform();
+
+        // 12. System Reference Data Module Services (SYS-REF-01 & SYS-REF-02)
+        services.AddScoped<IMasterDataCatalogWriteService, MasterDataCatalogWriteService>();
+        services.AddScoped<IMasterDataCatalogReadService, MasterDataCatalogReadService>();
+        services.AddScoped<IMasterDataItemWriteService, MasterDataItemWriteService>();
+        services.AddScoped<IMasterDataItemReadService, MasterDataItemReadService>();
+        services.AddScoped<IMasterDataService, MasterDataService>();
 
         return services;
     }

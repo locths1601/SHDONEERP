@@ -16,6 +16,7 @@ import { StudentDetailPage } from './pages/studentWorkspace/StudentDetailPage';
 import { UserGroupsPage } from './pages/admin/UserGroupsPage';
 import { AuditLogsPage } from './pages/admin/AuditLogsPage';
 import { ModuleRegistryPage } from './pages/admin/ModuleRegistryPage';
+import { MasterDataCatalogListPage } from './features/system-reference-data';
 import { Forbidden403Page, NotFound404Page } from './pages/ErrorPages';
 
 const queryClient = new QueryClient({
@@ -144,6 +145,14 @@ export const App: React.FC = () => {
               element={
                 <RequireAuth permission="system.permission_map.view">
                   <ModuleRegistryPage initialTab="mappings" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="admin/reference-data"
+              element={
+                <RequireAuth permission="system.reference_data.view">
+                  <MasterDataCatalogListPage />
                 </RequireAuth>
               }
             />

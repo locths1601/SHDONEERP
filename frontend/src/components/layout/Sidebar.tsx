@@ -10,7 +10,8 @@ import {
   Layers,
   Boxes,
   Key,
-  GraduationCap
+  GraduationCap,
+  Database
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -81,6 +82,12 @@ export const Sidebar: React.FC = () => {
       href: '/admin/permission-mapping',
       icon: <Key className="w-5 h-5" />,
       permission: 'system.permission_map.view',
+    },
+    {
+      label: 'Dữ liệu nguồn (Master Data)',
+      href: '/admin/reference-data',
+      icon: <Database className="w-5 h-5" />,
+      permission: 'system.reference_data.view',
     },
   ];
 

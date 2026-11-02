@@ -1,4 +1,4 @@
--- =========================================================================
+﻿-- =========================================================================
 -- Migration: 20261027_0013_WorkflowEngineAndOutboxEnhancement.sql
 -- Description: Workflow Engine & Event Foundation Enhancements (FND-03)
 --   1. Schema Enhancements for Wf_Definitions (Version, Description)
@@ -369,7 +369,7 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM [dbo].[Wf_Definitions] WHERE [Code] = 'GENERIC_DOCUMENT_APPROVAL')
 BEGIN
-    DECLARE @GenericDefId UNIQUEIDENTIFIER = NEWID();
+    DECLARE @GenericDefId UNIQUEIDENTIFIER = 'D1000000-0000-0000-0000-000000000001';
     DECLARE @GenericSchemaJson NVARCHAR(MAX) = N'{
         "version": 1,
         "initialState": "Draft",
@@ -406,6 +406,7 @@ BEGIN
     );
 
     -- Seed Version đầu tiên vào Wf_DefinitionVersions
+    IF NOT EXISTS (SELECT 1 FROM [dbo].[Wf_DefinitionVersions] WHERE [DefinitionId] = @GenericDefId AND [Version] = 1)
     INSERT INTO [dbo].[Wf_DefinitionVersions] (
         [Id], [DefinitionId], [Version], [InitialState], [DefinitionJson], [Status], [PublishedAtUtc]
     ) VALUES (

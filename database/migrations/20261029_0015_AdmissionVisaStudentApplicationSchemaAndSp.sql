@@ -1,4 +1,4 @@
--- =========================================================================
+﻿-- =========================================================================
 -- Migration: 20261029_0015_AdmissionVisaStudentApplicationSchemaAndSp.sql
 -- Description: Vertical Slice Implementation:
 --   STU-01: Student Profile Management (Party360 domain)
@@ -25,7 +25,7 @@ IF NOT EXISTS (SELECT 1 FROM [dbo].[System_Modules] WHERE [Code] = 'ADMISSIONVIS
 BEGIN
     INSERT INTO [dbo].[System_Modules] ([Id], [Code], [Name], [Description], [Version], [OrderIndex], [Icon], [Status], [IsActive], [CreatedAtUtc])
     VALUES (
-        'M1000000-0000-0000-0000-000000000003',
+        'A1000000-0000-0000-0000-000000000009',
         'ADMISSIONVISA',
         N'Quản lý Tuyển sinh, Hồ sơ & Visa',
         N'Phân hệ quản lý hồ sơ đăng ký du học, xét duyệt giấy tờ, checklist visa và tiến trình thụ lý lãnh sự',
@@ -45,8 +45,7 @@ BEGIN
         [OrderIndex] = 30,
         [Icon] = 'FileText',
         [Status] = 'Active',
-        [IsActive] = 1,
-        [UpdatedAtUtc] = SYSUTCDATETIME()
+        [IsActive] = 1
     WHERE [Code] = 'ADMISSIONVISA';
 END;
 GO
@@ -94,8 +93,7 @@ WHEN MATCHED THEN
         target.[Status] = src.[Status],
         target.[OwnerTeam] = src.[OwnerTeam],
         target.[DataClassification] = src.[DataClassification],
-        target.[ModuleId] = src.[ResolvedModuleId],
-        target.[UpdatedAtUtc] = SYSUTCDATETIME()
+        target.[ModuleId] = src.[ResolvedModuleId]
 WHEN NOT MATCHED THEN
     INSERT ([Id], [ModuleId], [Code], [Name], [Description], [FeatureType], [RoutePath], [ApiEndpoint], [ComponentKey], [Icon], [OrderIndex], [SupportedActions], [Status], [OwnerTeam], [DataClassification], [IsEnabledGlobal], [CreatedAtUtc])
     VALUES (src.[Id], src.[ResolvedModuleId], src.[Code], src.[Name], src.[Description], src.[FeatureType], src.[RoutePath], src.[ApiEndpoint], src.[ComponentKey], src.[Icon], src.[OrderIndex], src.[SupportedActions], src.[Status], src.[OwnerTeam], src.[DataClassification], 1, SYSUTCDATETIME());
@@ -105,7 +103,7 @@ GO
 DECLARE @AdmissionPermissions TABLE (
     [Code] NVARCHAR(100),
     [Name] NVARCHAR(150),
-    [Category] NVARCHAR(50),
+    [Module] NVARCHAR(50),
     [Description] NVARCHAR(500)
 );
 
@@ -124,12 +122,11 @@ ON (target.[Code] = src.[Code])
 WHEN MATCHED THEN
     UPDATE SET
         target.[Name] = src.[Name],
-        target.[Category] = src.[Category],
-        target.[Description] = src.[Description],
-        target.[UpdatedAtUtc] = SYSUTCDATETIME()
+        target.[Module] = src.[Module],
+        target.[Description] = src.[Description]
 WHEN NOT MATCHED THEN
-    INSERT ([Id], [Code], [Name], [Category], [Description], [CreatedAtUtc])
-    VALUES (NEWSEQUENTIALID(), src.[Code], src.[Name], src.[Category], src.[Description], SYSUTCDATETIME());
+    INSERT ([Id], [Code], [Name], [Module], [Description], [CreatedAtUtc])
+    VALUES (NEWID(), src.[Code], src.[Name], src.[Module], src.[Description], SYSUTCDATETIME());
 GO
 
 -- 4. ÁNH XẠ FEATURE -> ACTION -> PERMISSION
@@ -155,6 +152,7 @@ USING (
     SELECT 
         m.[ActionCode],
         m.[ActionName],
+        m.[PermissionCode],
         m.[Description],
         f.[Id] AS [FeatureId],
         p.[Id] AS [PermissionId]
@@ -166,12 +164,12 @@ ON (target.[FeatureId] = src.[FeatureId] AND target.[ActionCode] = src.[ActionCo
 WHEN MATCHED THEN
     UPDATE SET 
         target.[ActionName] = src.[ActionName],
+        target.[PermissionCode] = src.[PermissionCode],
         target.[PermissionId] = src.[PermissionId],
-        target.[Description] = src.[Description],
-        target.[UpdatedAtUtc] = SYSUTCDATETIME()
+        target.[Description] = src.[Description]
 WHEN NOT MATCHED THEN
-    INSERT ([Id], [FeatureId], [ActionCode], [ActionName], [PermissionId], [Description], [CreatedAtUtc])
-    VALUES (NEWSEQUENTIALID(), src.[FeatureId], src.[ActionCode], src.[ActionName], src.[PermissionId], src.[Description], SYSUTCDATETIME());
+    INSERT ([FeatureId], [ActionCode], [ActionName], [PermissionCode], [PermissionId], [Description], [IsDefault], [CreatedAtUtc])
+    VALUES (src.[FeatureId], src.[ActionCode], src.[ActionName], src.[PermissionCode], src.[PermissionId], src.[Description], 1, SYSUTCDATETIME());
 GO
 
 -- 5. CẤP QUYỀN TOÀN QUYỀN CHO NHÓM ADMINISTRATORS
@@ -180,15 +178,10 @@ SELECT @AdminGroupId = [Id] FROM [dbo].[Identity_UserGroups] WHERE [Code] = 'ADM
 
 IF @AdminGroupId IS NOT NULL
 BEGIN
-    INSERT INTO [dbo].[Identity_UserGroupPermissions] ([Id], [UserGroupId], [PermissionId], [ScopeType], [LegalEntityId], [BusinessUnitId], [BranchId], [CreatedAtUtc])
+    INSERT INTO [dbo].[Identity_UserGroupPermissions] ([UserGroupId], [PermissionId], [GrantedAtUtc])
     SELECT 
-        NEWSEQUENTIALID(),
         @AdminGroupId,
         p.[Id],
-        'Global',
-        NULL,
-        NULL,
-        NULL,
         SYSUTCDATETIME()
     FROM [dbo].[Identity_Permissions] p
     WHERE p.[Code] LIKE 'admission.%'
@@ -209,8 +202,8 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Party_PartyRelationships' 
 BEGIN
     CREATE TABLE [dbo].[Party_PartyRelationships] (
         [Id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_Party_PartyRelationships_Id DEFAULT NEWSEQUENTIALID(),
-        [PartyId] UNIQUEIDENTIFIER NOT NULL,
-        [RelatedPartyId] UNIQUEIDENTIFIER NULL,
+        [FromPartyId] UNIQUEIDENTIFIER NOT NULL,
+        [ToPartyId] UNIQUEIDENTIFIER NULL,
         [RelationshipType] NVARCHAR(50) NOT NULL, -- Father, Mother, Guardian, Sponsor, Spouse, Other
         [RelatedPersonName] NVARCHAR(150) NULL,
         [PhoneNumber] NVARCHAR(50) NULL,
@@ -227,12 +220,12 @@ BEGIN
         [UpdatedAtUtc] DATETIME2(7) NULL,
         [RowVersion] ROWVERSION NOT NULL,
         CONSTRAINT [PK_Party_PartyRelationships] PRIMARY KEY CLUSTERED ([Id] ASC),
-        CONSTRAINT [FK_Party_PartyRelationships_Party] FOREIGN KEY ([PartyId]) REFERENCES [dbo].[Party_Parties] ([Id]),
-        CONSTRAINT [FK_Party_PartyRelationships_RelatedParty] FOREIGN KEY ([RelatedPartyId]) REFERENCES [dbo].[Party_Parties] ([Id])
+        CONSTRAINT [FK_Party_PartyRelationships_Party] FOREIGN KEY ([FromPartyId]) REFERENCES [dbo].[Party_Parties] ([Id]),
+        CONSTRAINT [FK_Party_PartyRelationships_RelatedParty] FOREIGN KEY ([ToPartyId]) REFERENCES [dbo].[Party_Parties] ([Id])
     );
 
-    CREATE NONCLUSTERED INDEX [IX_Party_PartyRelationships_PartyId] ON [dbo].[Party_PartyRelationships] ([PartyId], [IsActive]);
-    CREATE NONCLUSTERED INDEX [IX_Party_PartyRelationships_RelatedPartyId] ON [dbo].[Party_PartyRelationships] ([RelatedPartyId]) WHERE [RelatedPartyId] IS NOT NULL;
+    CREATE NONCLUSTERED INDEX [IX_Party_PartyRelationships_FromPartyId] ON [dbo].[Party_PartyRelationships] ([FromPartyId], [IsActive]);
+    CREATE NONCLUSTERED INDEX [IX_Party_PartyRelationships_ToPartyId] ON [dbo].[Party_PartyRelationships] ([ToPartyId]) WHERE [ToPartyId] IS NOT NULL;
 END;
 GO
 
@@ -393,11 +386,12 @@ BEGIN
     BEGIN
         IF EXISTS (
             SELECT 1 FROM [dbo].[Identity_UserGroupMembers] ugm
-            JOIN [dbo].[Identity_UserGroupPermissions] ugp ON ugp.[UserGroupId] = ugm.[UserGroupId]
+            JOIN [dbo].[Identity_UserGroups] ug ON ug.[Id] = ugm.[UserGroupId]
+            JOIN [dbo].[Identity_UserGroupPermissions] ugp ON ugp.[UserGroupId] = ug.[Id]
             JOIN [dbo].[Identity_Permissions] p ON p.[Id] = ugp.[PermissionId]
             WHERE ugm.[UserId] = @CurrentUserId
               AND p.[Code] IN ('party.profile.view', 'admission.application.view')
-              AND ugp.[ScopeType] = 'Global'
+              AND ug.[ScopeType] = 'Global'
         )
         BEGIN
             SET @HasGlobalScope = 1;
@@ -420,13 +414,13 @@ BEGIN
     IF @HasGlobalScope = 0
     BEGIN
         INSERT INTO @AllowedLegalEntities ([LegalEntityId])
-        SELECT DISTINCT ugp.[LegalEntityId]
+        SELECT DISTINCT ugm.[ScopeLegalEntityId]
         FROM [dbo].[Identity_UserGroupMembers] ugm
         JOIN [dbo].[Identity_UserGroupPermissions] ugp ON ugp.[UserGroupId] = ugm.[UserGroupId]
         JOIN [dbo].[Identity_Permissions] p ON p.[Id] = ugp.[PermissionId]
         WHERE ugm.[UserId] = @CurrentUserId
           AND p.[Code] IN ('party.profile.view', 'admission.application.view')
-          AND ugp.[LegalEntityId] IS NOT NULL;
+          AND ugm.[ScopeLegalEntityId] IS NOT NULL;
 
         -- Fail-closed: Nếu không có scope nào, trả về rỗng
         IF NOT EXISTS (SELECT 1 FROM @AllowedLegalEntities)
@@ -579,7 +573,7 @@ BEGIN
         p.[PartyType],
         p.[Status],
         p.[CreatedAtUtc],
-        p.[UpdatedAtUtc],
+        CAST(NULL AS DATETIME2(7)) AS [UpdatedAtUtc],
         CONVERT(VARCHAR(50), p.[RowVersion], 2) AS [RowVersionBase64],
         per.[FirstName],
         per.[LastName],
@@ -598,8 +592,8 @@ BEGIN
         pr.[LegalEntityId],
         le.[Name] AS [LegalEntityName],
         pr.[IsActive],
-        pr.[EffectiveFromUtc],
-        pr.[EffectiveToUtc]
+        CAST(NULL AS DATETIME2(7)) AS [EffectiveFromUtc],
+        CAST(NULL AS DATETIME2(7)) AS [EffectiveToUtc]
     FROM [dbo].[Party_PartyRoles] pr
     LEFT JOIN [dbo].[Org_LegalEntities] le ON le.[Id] = pr.[LegalEntityId]
     WHERE pr.[PartyId] = @Id;
@@ -610,27 +604,27 @@ BEGIN
         cm.[ContactType],
         cm.[Value],
         cm.[IsPrimary],
-        cm.[Notes]
+        CAST(NULL AS NVARCHAR(500)) AS [Notes]
     FROM [dbo].[Party_PartyContactMethods] cm
     WHERE cm.[PartyId] = @Id;
 
     -- Result 4: Identifications
     SELECT 
         pi.[Id],
-        pi.[IdType],
-        pi.[IdNumber],
+        pi.[IdentificationType] AS [IdType],
+        pi.[IdentificationNumber] AS [IdNumber],
         pi.[IssueDate],
         pi.[ExpiryDate],
-        pi.[IssuePlace],
-        pi.[IsPrimary]
+        pi.[IssuingAuthority] AS [IssuePlace],
+        CAST(1 AS BIT) AS [IsPrimary]
     FROM [dbo].[Party_PartyIdentifications] pi
     WHERE pi.[PartyId] = @Id;
 
     -- Result 5: Relationships (Thân nhân, người giám hộ)
     SELECT 
         rel.[Id],
-        rel.[PartyId],
-        rel.[RelatedPartyId],
+        rel.[FromPartyId] AS [PartyId],
+        rel.[ToPartyId] AS [RelatedPartyId],
         rel.[RelationshipType],
         rel.[RelatedPersonName],
         rel.[PhoneNumber],
@@ -644,7 +638,7 @@ BEGIN
         rel.[Notes],
         rel.[IsActive]
     FROM [dbo].[Party_PartyRelationships] rel
-    WHERE rel.[PartyId] = @Id AND rel.[IsActive] = 1;
+    WHERE rel.[FromPartyId] = @Id AND rel.[IsActive] = 1;
 END;
 GO
 
@@ -717,11 +711,12 @@ BEGIN
     BEGIN
         IF EXISTS (
             SELECT 1 FROM [dbo].[Identity_UserGroupMembers] ugm
-            JOIN [dbo].[Identity_UserGroupPermissions] ugp ON ugp.[UserGroupId] = ugm.[UserGroupId]
+            JOIN [dbo].[Identity_UserGroups] ug ON ug.[Id] = ugm.[UserGroupId]
+            JOIN [dbo].[Identity_UserGroupPermissions] ugp ON ugp.[UserGroupId] = ug.[Id]
             JOIN [dbo].[Identity_Permissions] p ON p.[Id] = ugp.[PermissionId]
             WHERE ugm.[UserId] = @CurrentUserId
               AND p.[Code] = 'admission.application.view'
-              AND ugp.[ScopeType] = 'Global'
+              AND ug.[ScopeType] = 'Global'
         )
         BEGIN
             SET @HasGlobalScope = 1;
@@ -732,13 +727,13 @@ BEGIN
     IF @HasGlobalScope = 0
     BEGIN
         INSERT INTO @AllowedLegalEntities ([LegalEntityId])
-        SELECT DISTINCT ugp.[LegalEntityId]
+        SELECT DISTINCT ugm.[ScopeLegalEntityId]
         FROM [dbo].[Identity_UserGroupMembers] ugm
         JOIN [dbo].[Identity_UserGroupPermissions] ugp ON ugp.[UserGroupId] = ugm.[UserGroupId]
         JOIN [dbo].[Identity_Permissions] p ON p.[Id] = ugp.[PermissionId]
         WHERE ugm.[UserId] = @CurrentUserId
           AND p.[Code] = 'admission.application.view'
-          AND ugp.[LegalEntityId] IS NOT NULL;
+          AND ugm.[ScopeLegalEntityId] IS NOT NULL;
 
         IF NOT EXISTS (SELECT 1 FROM @AllowedLegalEntities)
         BEGIN
