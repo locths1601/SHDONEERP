@@ -1,4 +1,4 @@
--- =========================================================================
+﻿-- =========================================================================
 -- Migration: 20261025_0006_SeedFoundationData.sql
 -- Description: Dữ liệu quyền cơ bản, nhóm quản trị ADMINISTRATORS và mẫu pháp nhân
 -- =========================================================================
@@ -98,6 +98,12 @@ BEGIN
     );
 
     -- Gán user vào nhóm ADMINISTRATORS với phạm vi Global
+    IF NOT EXISTS (
+        SELECT 1 FROM [dbo].[Identity_UserGroupMembers]
+        WHERE [UserId] = 'B0000000-0000-0000-0000-000000000001'
+          AND [UserGroupId] = 'A0000000-0000-0000-0000-000000000001'
+    )
+    BEGIN
     INSERT INTO [dbo].[Identity_UserGroupMembers] ([Id], [UserId], [UserGroupId], [ScopeLegalEntityId], [AssignedAtUtc])
     VALUES (
         NEWID(),
@@ -107,6 +113,7 @@ BEGIN
         SYSUTCDATETIME()
     );
 END;
+    END;
 
 -- 5. Seed Demo Fixtures cho Legal Entities (Dành cho Dev/Testing - Đánh dấu DEMO)
 IF NOT EXISTS (SELECT 1 FROM [dbo].[Org_LegalEntities] WHERE [Code] = 'SHD_CORP')

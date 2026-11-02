@@ -1,0 +1,48 @@
+---
+description: "SHD OneERP STU-01 + ADM-01: bắt buộc đọc và tuân thủ toàn bộ rule code hiện hữu, bảo vệ domain ownership, Direct GBAC, SQL migrations, SP GET và UX; yêu cầu evidence trước khi báo DONE."
+globs: ["backend/**", "database/**", "frontend/src/**", "docs/implementation/student-dossier/**"]
+alwaysApply: false
+---
+
+# SHD OneERP — STU-01 / ADM-01 Code Rule Compliance
+
+> **Mục đích:** Rule bổ sung cho nhiệm vụ triển khai Student Profile (Party360) và Student Application & Dossier (AdmissionVisa). **Không thay thế** các file `.cursor/rules/*.mdc` khác hoặc ADR/PO decisions của SHD OneERP. Master Prompt đầy đủ: `SHD_ONEERP_STUDENT_DOSSIER_MULTI_AGENT_EXECUTION.md` (tìm vị trí thực tế trong repository).
+
+## R0 — Preflight bắt buộc
+
+- Trước khi tạo/sửa code, Master và từng Sub-Agent phải đọc **các rule đang tồn tại thật** trong `.cursor/rules/`. Không dựa riêng vào auto-load của Cursor.
+- Ít nhất kiểm tra `00-stack-reality.mdc`, `10-migration-workflow.mdc`, `15-backend-stored-procedure.mdc`, `20-frontend-component-rules.mdc`, `25-ui-ux-experience.mdc`, `30-bug-fix-protocol.mdc`, `40-permission-codes.mdc`, `50-do-and-dont.mdc`, `99-reference-index.mdc` **nếu có trong repository**; bổ sung file khác nếu tìm thấy.
+- Liệt kê `alwaysApply`, `globs`, phạm vi áp dụng; phân công agent owner; ghi `docs/implementation/student-dossier/00A_RULE_COMPLIANCE_MATRIX.md` (PASS/FAIL/BLOCKED/NOT_VERIFIED + source/test evidence).
+- Nếu rule nguồn có dấu vết **ezHR / OneHR** (vd `EzHR.*`, `UserGroupId=4`, `dbo.Permissions`, `/admin/permissions`, `ProjectId`), **không copy cứng sang SHD**. Xác minh tên entity, bảng, route và permission ở repo hiện tại. Không được âm thầm làm trái những HARD RULE kỹ thuật tương thích.
+- Nếu rule thực tế xung đột với ADR/kiến trúc/PO decision hiện hành của SHD, lập `RULE_CONFLICT` (tài liệu, điều khoản, tác động, phương án), báo Master/PO; ngừng phần code nguy hiểm thay vì tự chọn.
+
+## R1 — Kiến trúc và giới hạn dữ liệu
+
+- `Party360` sở hữu Party/Person/Role/Contact/Identification; `AdmissionVisa` sở hữu StudentApplication/checklist/attachment links; `Doc_Documents` và binary thuộc Document Foundation.
+- Không tạo module `STUDENT` sao chép Party; **một PartyId có thể có nhiều StudentApplication**.
+- Giao tiếp xuyên module bằng Application interfaces / events; cấm ghi trực tiếp DbSet thuộc module khác.
+- .NET 10 + Clean Architecture/Modular Monolith, React 18 + TS strict + Vite + Tailwind + shadcn/ui + TanStack Query/Zustand; xác minh implementation thực tế trước khi áp dụng tên file/class.
+
+## R2 — SQL và Backend
+
+- **Mọi thay đổi schema, stored procedure, permission/registry seed, reference data lâu dài** phải có **hand-written versioned SQL migration** trong `database/migrations/` thực tế. Không EF Migrations; không sửa migration đã apply, không viết DDL trong `DbSeeder`/`Program.cs` để thay thế migration.
+- **Tất cả GET dữ liệu nghiệp vụ** dùng SQL Server Stored Procedures qua executor hiện có. Filter/sort/pagination tại SQL. Không EF Core LINQ trả kết quả GET, không N+1, không `NOLOCK` mặc định.
+- Write dùng EF Core, validation, rowversion/409, audit; index, FK, constraint phù hợp. Chạy SQL integration test trên DB test riêng nếu có môi trường; không tự chạy trên production.
+- API/SQL **deny by default**: permission + scope **trong cùng membership** + classification/ownership; mọi NULL context, scope không được phép hoặc user không hợp lệ phải fail closed. Không tin userId/scope/isAdmin do client tự gửi. Không lộ PII, document binary, total count ngoài quyền.
+
+## R3 — Frontend & UX
+
+- Tra `frontend/src/components/common/` và `20-frontend-component-rules.mdc` **trước khi tạo component**; ưu tiên common Button/Card/DataGrid/Drawer/Dialog/Can nếu thực sự có.
+- Áp dụng UX gate từ `25-ui-ux-experience.mdc`: task flow rõ, primary CTA, giữ input/filter/context, loading/empty/no-result/error/success/403/409, keyboard/a11y, responsive/light/dark; không dùng mock runtime để tuyên bố hoàn thành.
+- Service layer gọi API, TanStack Query quản lý server state; FE permission gate chỉ hỗ trợ UX, backend mới là lớp kiểm soát bắt buộc.
+
+## R4 — Fix bug, QA và thao tác Git
+
+- Khi sửa bug: tái hiện → root cause → tìm pattern tương tự → sửa tối thiểu → regression test → cập nhật docs, theo `30-bug-fix-protocol.mdc`.
+- Trước DONE: đối chiếu từng rule áp dụng, cung cấp file:line, lệnh test/build, SQL DB env, số PASS/FAIL/SKIP và các mục NOT_VERIFIED. Build PASS không đồng nghĩa E2E/security PASS.
+- PO yêu cầu **không tạo branch/worktree, không commit/push/pull/reset/clean/stash**; các hướng dẫn commit message trong `.mdc` chỉ được dùng **khi PO thay đổi lệnh này**.
+- Master sở hữu duy nhất shared DbContext, DI/Program, migration numbering, global router/menu, registry seed; mỗi Sub-Agent chỉ sửa file theo phần được giao.
+
+## R5 — Release Gate
+
+**Không báo DONE** nếu còn `FAIL/BLOCKED` ở migration, SP GET, Authorization/Data Scope, PII/Document access hoặc kiểm thử an toàn. Phần chưa có môi trường xác minh phải ghi `NOT_VERIFIED`, không nâng thành PASS.

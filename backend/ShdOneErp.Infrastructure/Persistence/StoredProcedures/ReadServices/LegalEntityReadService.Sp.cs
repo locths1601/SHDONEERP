@@ -54,7 +54,7 @@ public class LegalEntityReadService : ILegalEntityReadService
     {
         return await _spExecutor.ExecuteStoredProcedureListAsync<LegalEntityLookupDto>(
             "sp_Organization_LegalEntity_GetLookup",
-            null,
+            new { CurrentUserId = _currentUser.UserId },
             cancellationToken: cancellationToken);
     }
 }

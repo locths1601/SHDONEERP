@@ -1,16 +1,25 @@
 using System.Text;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using ShdOneErp.Api.Authorization;
 using ShdOneErp.Api.Middlewares;
 using ShdOneErp.Application.Modules.Identity.Validators;
 using ShdOneErp.Application.Modules.Organization.Validators;
+using ShdOneErp.Application.Modules.Party360.Validators;
 using ShdOneErp.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 0. Configure Serilog structured logging
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
 // 1. Add Infrastructure & Application Services
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -18,9 +27,18 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // 2. Register FluentValidators
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateLegalEntityValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreatePersonPartyValidator>();
+builder.Services.AddFluentValidationAutoValidation();
 
 // 3. Configure JWT Authentication
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "SHD_OneERP_Super_Secret_Key_At_Least_32_Chars_2026!";
+var jwtSecret = builder.Configuration["Jwt:Secret"] 
+    ?? Environment.GetEnvironmentVariable("JWT_SECRET");
+
+if (string.IsNullOrWhiteSpace(jwtSecret) || Encoding.UTF8.GetByteCount(jwtSecret) < 32)
+{
+    throw new InvalidOperationException("Jwt:Secret phải được cấu hình bằng secret an toàn có tối thiểu 32 byte.");
+}
+
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "ShdOneErpApi";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "ShdOneErpClient";
 

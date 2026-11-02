@@ -1,0 +1,8 @@
+<Project>
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+</Project>
+

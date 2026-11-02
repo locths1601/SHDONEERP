@@ -25,6 +25,13 @@ export function useLegalEntityDetail(id?: string) {
   });
 }
 
+export function useLegalEntityLookup() {
+  return useQuery({
+    queryKey: [LEGAL_ENTITIES_QUERY_KEY, 'lookup'],
+    queryFn: () => legalEntityService.getLookup(),
+  });
+}
+
 export function useCreateLegalEntity() {
   const queryClient = useQueryClient();
 

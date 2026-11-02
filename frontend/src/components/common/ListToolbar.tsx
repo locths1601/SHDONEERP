@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, RefreshCw, Filter } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
 import { Button } from './Button';
 
 export interface ListToolbarProps {

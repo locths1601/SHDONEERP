@@ -17,7 +17,11 @@ public class TokenService : ITokenService
 
     public TokenService(IConfiguration configuration)
     {
-        _secretKey = configuration["Jwt:Secret"] ?? "SHD_OneERP_Super_Secret_Key_At_Least_32_Chars_2026!";
+        _secretKey = configuration["Jwt:Secret"]
+            ?? throw new InvalidOperationException("Cấu hình Jwt:Secret là bắt buộc.");
+        if (Encoding.UTF8.GetByteCount(_secretKey) < 32)
+            throw new InvalidOperationException("Jwt:Secret phải có tối thiểu 32 byte.");
+
         _issuer = configuration["Jwt:Issuer"] ?? "ShdOneErpApi";
         _audience = configuration["Jwt:Audience"] ?? "ShdOneErpClient";
         _expirationMinutes = int.TryParse(configuration["Jwt:ExpirationMinutes"], out var mins) ? mins : 60;

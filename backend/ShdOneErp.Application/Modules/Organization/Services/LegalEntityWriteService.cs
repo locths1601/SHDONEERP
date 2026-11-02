@@ -11,14 +11,24 @@ namespace ShdOneErp.Application.Modules.Organization.Services;
 public class LegalEntityWriteService : ILegalEntityWriteService
 {
     private readonly IShdOneErpDbContext _context;
+    private readonly ICurrentUser _currentUser;
+    private readonly IPermissionResolver _permissionResolver;
 
-    public LegalEntityWriteService(IShdOneErpDbContext context)
+    public LegalEntityWriteService(
+        IShdOneErpDbContext context,
+        ICurrentUser currentUser,
+        IPermissionResolver permissionResolver)
     {
         _context = context;
+        _currentUser = currentUser;
+        _permissionResolver = permissionResolver;
     }
 
     public async Task<Result<Guid>> CreateAsync(CreateLegalEntityRequest request, CancellationToken cancellationToken = default)
     {
+        if (!await HasGlobalPermissionAsync("org.legal_entity.create", cancellationToken))
+            return Result<Guid>.Fail("UNAUTHORIZED_SCOPE", "Chỉ quyền phạm vi toàn hệ thống mới được tạo pháp nhân.");
+
         var normalizedCode = request.Code.Trim().ToUpperInvariant();
 
         // Kiểm tra trùng lặp mã pháp nhân
@@ -59,6 +69,9 @@ public class LegalEntityWriteService : ILegalEntityWriteService
         {
             return Result.Fail("NOT_FOUND", $"Không tìm thấy pháp nhân có ID '{id}'.");
         }
+
+        if (!await HasScopeAsync("org.legal_entity.edit", id, cancellationToken))
+            return Result.Fail("UNAUTHORIZED_SCOPE", "Bạn không có quyền chỉnh sửa pháp nhân này.");
 
         // Kiểm tra đụng độ phiên bản (Optimistic Concurrency Control)
         if (!string.IsNullOrEmpty(request.RowVersionBase64) && entity.RowVersion != null && entity.RowVersion.Length > 0)
@@ -105,6 +118,9 @@ public class LegalEntityWriteService : ILegalEntityWriteService
             return Result.Fail("NOT_FOUND", $"Không tìm thấy pháp nhân có ID '{id}'.");
         }
 
+        if (!await HasScopeAsync("org.legal_entity.delete", id, cancellationToken))
+            return Result.Fail("UNAUTHORIZED_SCOPE", "Bạn không có quyền xóa pháp nhân này.");
+
         // Kiểm tra ràng buộc: Có BusinessUnit hoặc Branch đang hoạt động không
         var hasActiveUnits = await _context.BusinessUnits
             .AnyAsync(x => x.LegalEntityId == id && !x.IsDeleted, cancellationToken);
@@ -120,5 +136,23 @@ public class LegalEntityWriteService : ILegalEntityWriteService
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Ok("Xóa pháp nhân thành công.");
+    }
+
+    private Task<bool> HasGlobalPermissionAsync(string permissionCode, CancellationToken cancellationToken)
+    {
+        return _currentUser.UserId.HasValue
+            ? _permissionResolver.HasGlobalPermissionAsync(_currentUser.UserId.Value, permissionCode, cancellationToken)
+            : Task.FromResult(false);
+    }
+
+    private Task<bool> HasScopeAsync(string permissionCode, Guid legalEntityId, CancellationToken cancellationToken)
+    {
+        return _currentUser.UserId.HasValue
+            ? _permissionResolver.HasPermissionAsync(
+                _currentUser.UserId.Value,
+                permissionCode,
+                legalEntityId,
+                cancellationToken: cancellationToken)
+            : Task.FromResult(false);
     }
 }

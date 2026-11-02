@@ -5,6 +5,14 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface BootstrapPayload {
+  adminUsername: string;
+  adminEmail: string;
+  fullName: string;
+  password: string;
+  bootstrapSecret?: string;
+}
+
 export interface LoginResult {
   accessToken: string;
   refreshToken: string;
@@ -27,6 +35,14 @@ export const authService = {
 
   refreshToken: (refreshToken: string) => {
     return apiClient.post<LoginResult>('/auth/refresh-token', { refreshToken });
+  },
+
+  logout: (refreshToken?: string) => {
+    return apiClient.post('/auth/logout', { refreshToken: refreshToken || '' });
+  },
+
+  bootstrap: (data: BootstrapPayload) => {
+    return apiClient.post('/auth/bootstrap', data);
   },
 
   getProfile: () => {

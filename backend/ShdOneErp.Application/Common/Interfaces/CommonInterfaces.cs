@@ -54,7 +54,14 @@ public interface ITokenService
 public interface IPermissionResolver
 {
     Task<IReadOnlyList<EffectivePermissionDto>> GetUserPermissionsAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task<bool> HasPermissionAsync(Guid userId, string permissionCode, Guid? legalEntityId = null, CancellationToken cancellationToken = default);
+    Task<bool> HasGlobalPermissionAsync(Guid userId, string permissionCode, CancellationToken cancellationToken = default);
+    Task<bool> HasPermissionAsync(
+        Guid userId,
+        string permissionCode,
+        Guid? legalEntityId = null,
+        Guid? businessUnitId = null,
+        Guid? branchId = null,
+        CancellationToken cancellationToken = default);
 }
 
 public class EffectivePermissionDto
@@ -64,4 +71,10 @@ public class EffectivePermissionDto
     public Guid? ScopeLegalEntityId { get; set; }
     public Guid? ScopeBusinessUnitId { get; set; }
     public Guid? ScopeBranchId { get; set; }
+}
+
+public interface IPermissionCacheInvalidator
+{
+    void InvalidateUser(Guid userId);
+    void InvalidateAll();
 }

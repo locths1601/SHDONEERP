@@ -10,5 +10,7 @@ public interface IAuthService
 {
     Task<Result<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
     Task<Result<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default);
+    Task<Result> RevokeTokenAsync(RevokeTokenRequest request, CancellationToken cancellationToken = default);
+    Task<Result<UserDto>> BootstrapAdminAsync(BootstrapAdminRequest request, CancellationToken cancellationToken = default);
     Task<Result<UserDto>> GetCurrentUserProfileAsync(CancellationToken cancellationToken = default);
 }
